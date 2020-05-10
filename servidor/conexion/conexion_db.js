@@ -5,7 +5,7 @@ var connection = mysql.createConnection({
     port: '3306',
     user: 'root',
     password: '{1234}', //! mi contrasela mysql
-    database: 'peliculas',
+    database: 'competencias',
 });
 
 connection.connect();
