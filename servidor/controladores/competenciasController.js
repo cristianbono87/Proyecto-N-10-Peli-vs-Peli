@@ -36,7 +36,7 @@ function listarDosPeliculas(req, res) {
 
         var sql = "SELECT DISTINCT pelicula.id, poster, titulo FROM pelicula " +
             "JOIN director_pelicula ON pelicula_id = pelicula.id " +
-            "JOIN actor_pelicula ON actor_pelicula.pelicula_id = pelicula.id"
+            "JOIN actor_pelicula ON actor_pelicula.pelicula_id = pelicula.id " +
         "WHERE true = true ";
 
         var genero_id = competencia[0].genero_id;
@@ -80,7 +80,6 @@ function votar(req, res) {
                 console.log("error" + err)
                 return res.status(404).json('No se encuentra los datos');
             };
-            console.log(results)
         res.send(JSON.stringify(results));
     });
 };
@@ -97,15 +96,14 @@ function resultadosCompetencias(req,res){
         };
 
     var sql = "SELECT pelicula_id, poster, titulo, count(*) as cantidad_votos FROM pelicula p LEFT " +
-        "JOIN voto v ON p.id = v.pelicula_id GROUP BY pelicula_id ORDER BY cantidad_votos DESC";
+        "JOIN voto v ON p.id = v.pelicula_id GROUP BY pelicula_id ORDER BY cantidad_votos DESC LIMIT 3";
 
         conexion.query(sql, function (err, results) {
             if (err) {
                 console.log("error" + err)
                 return res.status(404).send('No se encuentra los datos');
             };
-
-            console.log(results)
+            
             const result = {
                 'competencia': competencia[0].nombre,
                 'resultados': results
@@ -115,11 +113,94 @@ function resultadosCompetencias(req,res){
     })
 };
 
+function crearNuevaCompetencia(req, res){
+    let body = req.body;
+
+    var nombre = body.nombre !== '0' ? body.nombre : null;
+    var genero = body.genero !== '0' ? body.genero : null;
+    var director = body.director !== '0' ? body.director : null;
+    var actor = body.actor !== '0' ? body.actor : null;
+
+    if (!nombre) return res.status(404).send("El nombre de la competencia no es compatible");
+
+    var sql = "SELECT pelicula.id, poster, titulo FROM pelicula " +
+        "JOIN director_pelicula ON pelicula_id = pelicula.id " +
+        "JOIN actor_pelicula ON actor_pelicula.pelicula_id = pelicula.id " +
+    "WHERE true = true ";
+
+        if(genero) sql = sql + " AND genero_id = " + genero;
+        if(director) sql = sql + " AND director_id = " + director;
+        if(actor) sql = sql + " AND actor_id = " + actor;
+
+        console.log(sql) //!--
+
+        conexion.query(sql, function(err, peliculas){
+            if (err) {
+                console.log("error" + err)
+                return res.status(404).send('No se encuentra los datos');
+            };
+
+            console.log(peliculas.length)
+
+            if (peliculas.length < 2) return res.status(422).send("No se puede crear la competencia. No hay al menos dos peliculas con el criterio elegido");
+
+            conexion.query("INSERT INTO `competencias`.`competicion` (`nombre`, `genero_id`, `director_id`, `actor_id`) VALUES (?, ?, ?, ?)", [nombre, director, genero, actor],
+                function (err, results) {
+                    if (err) {
+                        console.log("error" + err)
+                        return res.status(404).json('No se encuentra los datos');
+                    };
+                    res.send(JSON.stringify(results));
+                });
+        })
+};
+
+function cargarGeneros(req, res){
+    var sql = "SELECT * FROM genero;"
+
+    conexion.query(sql, function (err, genero){
+        if(err) {
+            console.log("error" + err)
+            return res.status(404).send('No se encuentra los datos');
+        };
+        res.send(JSON.stringify(genero));
+    })
+};
+
+function cargarDirectores(req, res) {
+    var sql = "SELECT * FROM director;"
+
+    conexion.query(sql, function (err, director) {
+        if (err) {
+            console.log("error" + err)
+            return res.status(404).send('No se encuentra los datos');
+        };
+        res.send(JSON.stringify(director));
+    })
+}
+
+function cargarActores(req, res) {
+    var sql = "SELECT * FROM actor;"
+
+    conexion.query(sql, function (err, actor) {
+        if (err) {
+            console.log("error" + err)
+            return res.status(404).send('No se encuentra los datos');
+        };
+        res.send(JSON.stringify(actor));
+    })
+}
+
+
 //!exportamos las funciones de consulta
 
 module.exports = {
     todasLasCompetencias: todasLasCompetencias,
     listarDosPeliculas: listarDosPeliculas,
     votar: votar,
-    resultadosCompetencias: resultadosCompetencias
+    resultadosCompetencias: resultadosCompetencias,
+    crearNuevaCompetencia: crearNuevaCompetencia,
+    cargarGeneros: cargarGeneros,
+    cargarDirectores: cargarDirectores,
+    cargarActores: cargarActores
 }
