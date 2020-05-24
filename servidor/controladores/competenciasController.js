@@ -87,6 +87,32 @@ function votar(req, res) {
 
 function resultadosCompetencias(req,res){
     console.log('resultadosCompetencias Work')
+
+    var idCompetencia = req.params.id;
+
+    conexion.query("SELECT * FROM competicion WHERE id = "+ idCompetencia, function (err, competencia) {
+        if (err) {
+            console.log("error" + err)
+            return res.status(404).send('No se encuentra los datos');
+        };
+
+    var sql = "SELECT pelicula_id, poster, titulo, count(*) as cantidad_votos FROM pelicula p LEFT " +
+        "JOIN voto v ON p.id = v.pelicula_id GROUP BY pelicula_id ORDER BY cantidad_votos DESC";
+
+        conexion.query(sql, function (err, results) {
+            if (err) {
+                console.log("error" + err)
+                return res.status(404).send('No se encuentra los datos');
+            };
+
+            console.log(results)
+            const result = {
+                'competencia': competencia[0].nombre,
+                'resultados': results
+            }
+            res.send(JSON.stringify(result));
+        })
+    })
 };
 
 //!exportamos las funciones de consulta
