@@ -11,7 +11,7 @@ console.log('todasLasCompetencias work');
   conexion.query(sql, function (err, results, fields) {
         if (err) {
             console.log("error" + err)
-            return res.status(404).json('No se encuentra los datos');
+            return res.status(404).json('No hay competencias');
         };
         res.send(JSON.stringify(results));
     });
@@ -54,7 +54,7 @@ function listarDosPeliculas(req, res) {
         conexion.query(sql, function (err, results, fields) {
             if (err) {
                 console.log("error" + err)
-                return res.status(404).send('No se encuentra los datos');
+                return res.status(404).send('No existen peliculas para esta competencia');
             };
 
                 const result = {
@@ -92,16 +92,16 @@ function resultadosCompetencias(req,res){
     conexion.query("SELECT * FROM competicion WHERE id = "+ idCompetencia, function (err, competencia) {
         if (err) {
             console.log("error" + err)
-            return res.status(404).send('No se encuentra los datos');
+            return res.status(404).send('No se encuentra la competencia con id seleccionado');
         };
 
-    var sql = "SELECT pelicula_id, poster, titulo, count(*) as cantidad_votos FROM pelicula p LEFT " +
-        "JOIN voto v ON p.id = v.pelicula_id GROUP BY pelicula_id ORDER BY cantidad_votos DESC LIMIT 3";
+    var sql = "SELECT pelicula_id, poster, titulo, count(*) as votos FROM pelicula p LEFT " +
+        "JOIN voto v ON p.id = v.pelicula_id GROUP BY pelicula_id ORDER BY votos DESC LIMIT 3";
 
         conexion.query(sql, function (err, results) {
             if (err) {
                 console.log("error" + err)
-                return res.status(404).send('No se encuentra los datos');
+                return res.status(404).send('No se encuentran las peliculas correspondientes a la competencia');
             };
             
             const result = {
@@ -137,18 +137,22 @@ function crearNuevaCompetencia(req, res){
         conexion.query(sql, function(err, peliculas){
             if (err) {
                 console.log("error" + err)
-                return res.status(404).send('No se encuentra los datos');
+                return res.status(404).send('No se encuentran peliculas que coincidan con los filtros seleccionados');
             };
 
+            //!aca esta el problema los datos que no esten no los tengo que pasar!
+            console.log(nombre, director, genero, actor)
             console.log(peliculas.length)
 
             if (peliculas.length < 2) return res.status(422).send("No se puede crear la competencia. No hay al menos dos peliculas con el criterio elegido");
 
-            conexion.query("INSERT INTO `competencias`.`competicion` (`nombre`, `genero_id`, `director_id`, `actor_id`) VALUES (?, ?, ?, ?)", [nombre, director, genero, actor],
+            var sql = "INSERT INTO competicion (`nombre`, `genero_id`, `director_id`, `actor_id`) VALUES ('"+nombre+"',"+genero+","+director+","+actor+");";
+
+            conexion.query(sql,
                 function (err, results) {
                     if (err) {
                         console.log("error" + err)
-                        return res.status(404).json('No se encuentra los datos');
+                        return res.status(404).json('Error al insertar nueva competencia');
                     };
                     res.send(JSON.stringify(results));
                 });
@@ -161,7 +165,7 @@ function cargarGeneros(req, res){
     conexion.query(sql, function (err, genero){
         if(err) {
             console.log("error" + err)
-            return res.status(404).send('No se encuentra los datos');
+            return res.status(404).send('No se encuentra los generos');
         };
         res.send(JSON.stringify(genero));
     })
@@ -173,7 +177,7 @@ function cargarDirectores(req, res) {
     conexion.query(sql, function (err, director) {
         if (err) {
             console.log("error" + err)
-            return res.status(404).send('No se encuentra los datos');
+            return res.status(404).send('No se encuentra los directores');
         };
         res.send(JSON.stringify(director));
     })
@@ -185,7 +189,7 @@ function cargarActores(req, res) {
     conexion.query(sql, function (err, actor) {
         if (err) {
             console.log("error" + err)
-            return res.status(404).send('No se encuentra los datos');
+            return res.status(404).send('No se encuentra los actores');
         };
         res.send(JSON.stringify(actor));
     })
