@@ -195,6 +195,64 @@ function cargarActores(req, res) {
     })
 }
 
+//!arreglar no me esta trayendo la informacion al front, me trae un json pero no me aparece en pantalla los datos 
+function cargarCompetencia(req, res) {
+    console.log('cargarCompetencia Work')
+
+    var id = req.params.id;
+
+    var sql = "SELECT * FROM competicion WHERE id= "+id+";"
+
+    conexion.query(sql, function (err, competencia) {
+        if (err) {
+            console.log("error" + err)
+            return res.status(404).send('La competencia que se quiere reiniciar no existe o no tiene votos');
+        };
+        res.send(JSON.stringify(competencia));
+    })
+}
+//!----
+
+function eliminarVotos(req, res) {
+    console.log('eliminarVotos Work')
+
+    var id = req.params.id;
+    
+    var sql= "DELETE FROM voto WHERE competencia_id ="+ id + ";"
+
+    conexion.query(sql, function (err, votos) {
+        if (err) {
+            console.log("error" + err)
+            return res.status(404).send('No se pueden eliminar los votos');
+        };
+        res.send(JSON.stringify(votos));
+    })
+}
+
+function eliminarCompetencia(req, res) {
+    console.log('eliminarCompetencia Work')
+
+    var id_competencia = req.params.id;
+
+    var sql = "DELETE FROM voto WHERE competencia_id =" + id_competencia + ";"
+
+    conexion.query(sql, function (err, eliminarVotos) {
+        if (err) {
+            console.log("error" + err)
+            return res.status(404).send('No se pueden eliminar los votos');
+        };
+
+        var sql = "DELETE FROM competicion WHERE id =" + id_competencia + ";"
+
+        conexion.query(sql, function (err, eliminarCompetencia) {
+            if (err) {
+                console.log("error" + err)
+                return res.status(404).send('No se pueden eliminar la competencia');
+            };
+            res.send(JSON.stringify(eliminarCompetencia));
+        })
+    })
+}
 
 //!exportamos las funciones de consulta
 
@@ -206,5 +264,8 @@ module.exports = {
     crearNuevaCompetencia: crearNuevaCompetencia,
     cargarGeneros: cargarGeneros,
     cargarDirectores: cargarDirectores,
-    cargarActores: cargarActores
+    cargarActores: cargarActores,
+    cargarCompetencia: cargarCompetencia,
+    eliminarVotos: eliminarVotos,
+    eliminarCompetencia: eliminarCompetencia
 }

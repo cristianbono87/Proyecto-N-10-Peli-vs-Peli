@@ -17,18 +17,18 @@ app.get('/competencias/:id/resultados', controladorVs.resultadosCompetencias);
 app.get('/generos', controladorVs.cargarGeneros);
 app.get('/directores', controladorVs.cargarDirectores);
 app.get('/actores', controladorVs.cargarActores);
+app.get('/competencias/:id', controladorVs.cargarCompetencia);
 
 app.post('/competencias/:id/voto', controladorVs.votar);
 app.post('/competencias', controladorVs.crearNuevaCompetencia);
 
+app.delete('/competencias/:id/votos', controladorVs.eliminarVotos);
+app.delete('/competencias/:id', controladorVs.eliminarCompetencia);  
 
 // app.get('/competencias', competenciaController.listarCompetencias);
 // app.get('/competencias/:id/peliculas', competenciaController.obtenerPeliculasAleatorias);
-// app.get('/competencias/:id', competenciaController.cargarCompetencia);
 
 // app.put('/competencias/:id', competenciaController.editarNombreCompetencia);
-// app.delete('/competencias/:id/votos', competenciaController.eliminarVotos);
-// app.delete('/competencias/:id', competenciaController.eliminarCompetencia);  
 
 app.listen(puerto, function () {
     console.log("Escuchando en el puerto " + puerto);
