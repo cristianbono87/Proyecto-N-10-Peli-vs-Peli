@@ -4,7 +4,6 @@ const conexion = require('../conexion/conexion_db');
 //!programacion de los pedidos a la base de datos
 
 function todasLasCompetencias(req, res) {
-console.log('todasLasCompetencias work');
 
   var sql = "select * from competicion";
 
@@ -19,8 +18,6 @@ console.log('todasLasCompetencias work');
 
 function listarDosPeliculas(req, res) {
 
-    console.log('listarDosPeliculas work');
-
     var id = req.params.id;
 
     var sql = "SELECT * FROM competicion WHERE id = " + id;
@@ -31,7 +28,7 @@ function listarDosPeliculas(req, res) {
 
         if (competencia.length === 0) {
             console.log("No se encontro ninguna competencia con ese id");
-            return res.status(404).send("No se encontro ninguna competencia con ese id");
+            return res.status(422).send("No se encontro ninguna competencia con ese id");
         }
 
         var sql = "SELECT DISTINCT pelicula.id, poster, titulo FROM pelicula " +
@@ -67,7 +64,6 @@ function listarDosPeliculas(req, res) {
 };
 
 function votar(req, res) {
-    console.log('votar work');
 
     let body = req.body;
 
@@ -85,7 +81,6 @@ function votar(req, res) {
 };
 
 function resultadosCompetencias(req,res){
-    console.log('resultadosCompetencias Work')
 
     var idCompetencia = req.params.id;
 
@@ -97,8 +92,6 @@ function resultadosCompetencias(req,res){
 
     var sql = "SELECT pelicula_id, poster, titulo, count(*) as votos FROM pelicula p LEFT " +
         "JOIN voto v ON p.id = v.pelicula_id WHERE competencia_id = " + idCompetencia + " GROUP BY pelicula_id  ORDER BY votos DESC LIMIT 3";
-
-        console.log(sql)
 
         conexion.query(sql, function (err, results) {
             if (err) {
@@ -116,6 +109,7 @@ function resultadosCompetencias(req,res){
 };
 
 function crearNuevaCompetencia(req, res){
+
     let body = req.body;
 
     var nombre = body.nombre !== '0' ? body.nombre : null;
@@ -123,7 +117,7 @@ function crearNuevaCompetencia(req, res){
     var director = body.director !== '0' ? body.director : null;
     var actor = body.actor !== '0' ? body.actor : null;
 
-    if (!nombre) return res.status(404).send("El nombre de la competencia no es compatible");
+    if (!nombre) return res.status(422).send("El nombre de la competencia no es compatible");
 
     conexion.query("SELECT * FROM competicion WHERE nombre = '"+ nombre +"';",
         function (err, competenciasExistentes) {
@@ -132,7 +126,7 @@ function crearNuevaCompetencia(req, res){
                 return res.status(404).json('No se encontraron competencias');
             };
 
-            if (competenciasExistentes.length !== 0) return res.status(404).send("El nombre de la competencia ya existe");
+            if (competenciasExistentes.length !== 0) return res.status(422).send("El nombre de la competencia ya existe");
             
             var sql = "SELECT pelicula.id, poster, titulo FROM pelicula " +
             "JOIN director_pelicula ON pelicula_id = pelicula.id " +
@@ -166,6 +160,7 @@ function crearNuevaCompetencia(req, res){
         };
 
 function cargarGeneros(req, res){
+
     var sql = "SELECT * FROM genero;"
 
     conexion.query(sql, function (err, genero){
@@ -178,6 +173,7 @@ function cargarGeneros(req, res){
 };
 
 function cargarDirectores(req, res) {
+
     var sql = "SELECT * FROM director;"
 
     conexion.query(sql, function (err, director) {
@@ -190,6 +186,7 @@ function cargarDirectores(req, res) {
 }
 
 function cargarActores(req, res) {
+
     var sql = "SELECT * FROM actor;"
 
     conexion.query(sql, function (err, actor) {
@@ -211,8 +208,6 @@ function cargarCompetencia(req, res) {
     "LEFT JOIN actor a ON competicion.actor_id = a.id " +
     "WHERE competicion.id = " + id + ";"
 
-    console.log(sql)
-
     conexion.query(sql, function (err, competencia) {
         if (err) {
             console.log("error" + err)
@@ -225,7 +220,6 @@ function cargarCompetencia(req, res) {
             director_nombre: competencia[0].nombreDirector,
             actor_nombre: competencia[0].nombreActor
         }
-
         res.send(JSON.stringify(data));
     })
 }
@@ -239,7 +233,7 @@ function eliminarVotos(req, res) {
     conexion.query(sql, function (err, votos) {
         if (err) {
             console.log("error" + err)
-            return res.status(404).send('No se pueden eliminar los votos');
+            return res.status(500).send('No se pueden eliminar los votos');
         };
         res.send(JSON.stringify(votos));
     })
@@ -254,7 +248,7 @@ function eliminarCompetencia(req, res) {
     conexion.query(sql, function (err, eliminarVotos) {
         if (err) {
             console.log("error" + err)
-            return res.status(404).send('No se pueden eliminar los votos');
+            return res.status(500).send('No se pueden eliminar los votos');
         };
 
         var sql = "DELETE FROM competicion WHERE id =" + id_competencia + ";"
@@ -262,7 +256,7 @@ function eliminarCompetencia(req, res) {
         conexion.query(sql, function (err, eliminarCompetencia) {
             if (err) {
                 console.log("error" + err)
-                return res.status(404).send('No se pueden eliminar la competencia');
+                return res.status(500).send('No se pueden eliminar la competencia');
             };
             res.send(JSON.stringify(eliminarCompetencia));
         })
@@ -279,7 +273,7 @@ function editarNombreCompetencia(req, res) {
     conexion.query(sql, function (err, cambiarNombre) {
         if (err) {
             console.log("error" + err)
-            return res.status(404).send('No se puede cambiar el nombre');
+            return res.status(500).send('No se puede cambiar el nombre');
         };
         res.send(JSON.stringify(cambiarNombre));
     })

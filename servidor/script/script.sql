@@ -1,5 +1,7 @@
 USE competencias;
 
+DROP TABLE IF EXISTS `competicion`;
+
 CREATE TABLE `competicion` (
   `id` int NOT NULL AUTO_INCREMENT,
   `nombre` varchar(45) NOT NULL,

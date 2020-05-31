@@ -27,10 +27,6 @@ app.delete('/competencias/:id', controladorVs.eliminarCompetencia);
 
 app.put('/competencias/:id', controladorVs.editarNombreCompetencia);
 
-// app.get('/competencias', competenciaController.listarCompetencias);
-// app.get('/competencias/:id/peliculas', competenciaController.obtenerPeliculasAleatorias);
-
-
 app.listen(puerto, function () {
     console.log("Escuchando en el puerto " + puerto);
 });
