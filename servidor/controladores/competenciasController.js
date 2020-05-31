@@ -96,7 +96,9 @@ function resultadosCompetencias(req,res){
         };
 
     var sql = "SELECT pelicula_id, poster, titulo, count(*) as votos FROM pelicula p LEFT " +
-        "JOIN voto v ON p.id = v.pelicula_id GROUP BY pelicula_id ORDER BY votos DESC LIMIT 3";
+        "JOIN voto v ON p.id = v.pelicula_id WHERE competencia_id = " + idCompetencia + " GROUP BY pelicula_id  ORDER BY votos DESC LIMIT 3";
+
+        console.log(sql)
 
         conexion.query(sql, function (err, results) {
             if (err) {
@@ -195,26 +197,36 @@ function cargarActores(req, res) {
     })
 }
 
-//!arreglar no me esta trayendo la informacion al front, me trae un json pero no me aparece en pantalla los datos 
 function cargarCompetencia(req, res) {
-    console.log('cargarCompetencia Work')
 
     var id = req.params.id;
 
-    var sql = "SELECT * FROM competicion WHERE id= "+id+";"
+    var sql = "SELECT competicion.nombre AS nombreCompetencia, g.nombre AS nombreGenero, d.nombre AS nombreDirector, a.nombre AS nombreActor FROM competicion "+
+    "LEFT JOIN genero g ON competicion.genero_id = g.id "+
+    "LEFT JOIN director d ON competicion.director_id = d.id " +
+    "LEFT JOIN actor a ON competicion.actor_id = a.id " +
+    "WHERE competicion.id = " + id + ";"
+
+    console.log(sql)
 
     conexion.query(sql, function (err, competencia) {
         if (err) {
             console.log("error" + err)
             return res.status(404).send('La competencia que se quiere reiniciar no existe o no tiene votos');
         };
-        res.send(JSON.stringify(competencia));
+
+        var data = {
+            nombre: competencia[0].nombreCompetencia,
+            genero_nombre: competencia[0].nombreGenero,
+            director_nombre: competencia[0].nombreDirector,
+            actor_nombre: competencia[0].nombreActor
+        }
+
+        res.send(JSON.stringify(data));
     })
 }
-//!----
 
 function eliminarVotos(req, res) {
-    console.log('eliminarVotos Work')
 
     var id = req.params.id;
     
@@ -230,7 +242,6 @@ function eliminarVotos(req, res) {
 }
 
 function eliminarCompetencia(req, res) {
-    console.log('eliminarCompetencia Work')
 
     var id_competencia = req.params.id;
 
@@ -254,6 +265,22 @@ function eliminarCompetencia(req, res) {
     })
 }
 
+function editarNombreCompetencia(req, res) {
+
+    var id = req.params.id;
+    var nombreNuevo = req.body.nombre;
+
+    var sql = "UPDATE competicion SET nombre ='" + nombreNuevo + "' WHERE (id = " + id + ");"
+
+    conexion.query(sql, function (err, cambiarNombre) {
+        if (err) {
+            console.log("error" + err)
+            return res.status(404).send('No se puede cambiar el nombre');
+        };
+        res.send(JSON.stringify(cambiarNombre));
+    })
+}
+
 //!exportamos las funciones de consulta
 
 module.exports = {
@@ -267,5 +294,6 @@ module.exports = {
     cargarActores: cargarActores,
     cargarCompetencia: cargarCompetencia,
     eliminarVotos: eliminarVotos,
-    eliminarCompetencia: eliminarCompetencia
+    eliminarCompetencia: eliminarCompetencia,
+    editarNombreCompetencia: editarNombreCompetencia
 }
