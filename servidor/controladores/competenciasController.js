@@ -125,41 +125,45 @@ function crearNuevaCompetencia(req, res){
 
     if (!nombre) return res.status(404).send("El nombre de la competencia no es compatible");
 
-    var sql = "SELECT pelicula.id, poster, titulo FROM pelicula " +
-        "JOIN director_pelicula ON pelicula_id = pelicula.id " +
-        "JOIN actor_pelicula ON actor_pelicula.pelicula_id = pelicula.id " +
-    "WHERE true = true ";
-
-        if(genero) sql = sql + " AND genero_id = " + genero;
-        if(director) sql = sql + " AND director_id = " + director;
-        if(actor) sql = sql + " AND actor_id = " + actor;
-
-        console.log(sql) //!--
-
-        conexion.query(sql, function(err, peliculas){
+    conexion.query("SELECT * FROM competicion WHERE nombre = '"+ nombre +"';",
+        function (err, competenciasExistentes) {
             if (err) {
                 console.log("error" + err)
-                return res.status(404).send('No se encuentran peliculas que coincidan con los filtros seleccionados');
+                return res.status(404).json('No se encontraron competencias');
             };
 
-            //!aca esta el problema los datos que no esten no los tengo que pasar!
-            console.log(nombre, director, genero, actor)
-            console.log(peliculas.length)
-
-            if (peliculas.length < 2) return res.status(422).send("No se puede crear la competencia. No hay al menos dos peliculas con el criterio elegido");
-
-            var sql = "INSERT INTO competicion (`nombre`, `genero_id`, `director_id`, `actor_id`) VALUES ('"+nombre+"',"+genero+","+director+","+actor+");";
-
-            conexion.query(sql,
-                function (err, results) {
-                    if (err) {
-                        console.log("error" + err)
-                        return res.status(404).json('Error al insertar nueva competencia');
-                    };
-                    res.send(JSON.stringify(results));
-                });
-        })
-};
+            if (competenciasExistentes.length !== 0) return res.status(404).send("El nombre de la competencia ya existe");
+            
+            var sql = "SELECT pelicula.id, poster, titulo FROM pelicula " +
+            "JOIN director_pelicula ON pelicula_id = pelicula.id " +
+            "JOIN actor_pelicula ON actor_pelicula.pelicula_id = pelicula.id " +
+            "WHERE true = true ";
+            
+            if(genero) sql = sql + " AND genero_id = " + genero;
+            if(director) sql = sql + " AND director_id = " + director;
+            if(actor) sql = sql + " AND actor_id = " + actor;
+            
+            conexion.query(sql, function(err, peliculas){
+                if (err) {
+                    console.log("error" + err)
+                    return res.status(404).send('No se encuentran peliculas que coincidan con los filtros seleccionados');
+                };
+                
+                if (peliculas.length < 2) return res.status(422).send("No se puede crear la competencia. No hay al menos dos peliculas con el criterio elegido");
+                
+                var sql = "INSERT INTO competicion (`nombre`, `genero_id`, `director_id`, `actor_id`) VALUES ('"+nombre+"',"+genero+","+director+","+actor+");";
+                
+                conexion.query(sql,
+                    function (err, results) {
+                        if (err) {
+                            console.log("error" + err)
+                            return res.status(404).json('Error al insertar nueva competencia');
+                        };
+                        res.send(JSON.stringify(results));
+                    });
+                })
+            });
+        };
 
 function cargarGeneros(req, res){
     var sql = "SELECT * FROM genero;"
